@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedly</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Schedly</h1>
+        <button id="addTaskBtn">+ Add Task</button>
+    </header>
+
+    <section>
+        <h2>Task Schedule</h2>
+        <ul>
+            {% for task in tasks %}
+            <li>
+                <input type="checkbox" 
+                       onclick="location.href='{{ url_for('toggle_done', task_id=loop.index0) }}'" 
+                       {% if task.done %} checked {% endif %}>
+
+                <span style="
+                    {% if task.type == 'important' %}font-weight: bold; {% endif %}
+                    {% if task.done %}text-decoration: line-through; {% endif %}">
+                    {{ task.name }}
+                </span>
+
+                <button onclick="openEditForm({{ loop.index0 }}, '{{ task.name|e }}', '{{ task.type|e }}')">Edit</button>
+                <button onclick="location.href='{{ url_for('delete_task', task_id=loop.index0) }}'">Delete</button>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <div id="taskModal" class="modal hidden">
+        <form id="taskForm" action="{{ url_for('add_task') }}" method="POST">
+            <input type="text" name="task_name" id="taskNameInput" placeholder="Task Name" required>
+            <select name="task_type" id="taskTypeInput">
+                <option value="normal">Normal</option>
+                <option value="important">Important</option>
+            </select>
+            <button type="submit">Save</button>
+            <button type="button" onclick="closeModal()">Cancel</button>
+        </form>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
