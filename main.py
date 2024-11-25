@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
+from itertools import permutations
 
 app = Flask(__name__)
 
@@ -7,8 +8,14 @@ tasks = []
 
 @app.route('/')
 def index():
-    # Sort tasks by type (important tasks first)
-    sorted_tasks = sorted(tasks, key=lambda x: (x['type'] != 'important', x['id']))
+    # Sort tasks by type (important tasks first) using permutations
+    all_permutations = list(permutations(tasks))
+    sorted_tasks = min(
+        all_permutations,
+        key=lambda perm: [
+            (task['type'] != 'important', task['id']) for task in perm
+        ]
+    )
     return render_template('index.html', tasks=sorted_tasks)
 
 @app.route('/add', methods=['POST'])
@@ -16,14 +23,14 @@ def add_task():
     task_name = request.form["task_name"]
     task_type = request.form["task_type"]
     tasks.append({
-        "id": len(tasks),  # Unique ID for each task
+        "id": len(tasks) + 1,
         "name": task_name,
         "type": task_type,
-        "done": False
+        "done": False,
     })
     return redirect(url_for("index"))
 
-@app.route("/edit/<int:task_id>", methods=["POST"])
+@app.route('/edit/<int:task_id>', methods=['POST'])
 def edit_task(task_id):
     task_name = request.form["task_name"]
     task_type = request.form["task_type"]
